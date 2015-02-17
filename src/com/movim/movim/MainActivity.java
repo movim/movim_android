@@ -1,7 +1,10 @@
 package com.movim.movim;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Window;
@@ -18,6 +21,7 @@ import android.widget.ProgressBar;
     protected void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
     	getWindow().requestFeature(Window.FEATURE_PROGRESS);
+    	getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
         webview = (WebView)findViewById(R.id.webview);
@@ -40,8 +44,18 @@ import android.widget.ProgressBar;
                }
                
             }
+         
         });
-        webview.setWebViewClient(new WebViewClient());
+        webview.setWebViewClient(new WebViewClient() {
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+        		webview.loadUrl("file:///android_asset/error.html");
+        		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        			getWindow().setStatusBarColor(Color.rgb(55, 71, 79));
+        		}
+        	}
+        	
+        }
+        );
         webview.loadUrl("https://pod.movim.eu/");
     }
     
