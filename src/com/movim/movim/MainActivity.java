@@ -49,9 +49,9 @@ import android.widget.ProgressBar;
         webview.setWebViewClient(new WebViewClient() {
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         		webview.loadUrl("file:///android_asset/error.html");
-        		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        		/*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         			getWindow().setStatusBarColor(Color.rgb(55, 71, 79));
-        		}
+        		}*/
         	}
         	
         }
