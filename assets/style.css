@@ -1,0 +1,27 @@
+body {
+    background-color: #37474F;
+    color: white;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 2rem;
+}
+
+body img {
+    max-width: 200px;
+    margin: 3rem 0;
+}
+
+body a.button {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0.25rem;
+    padding: 0.7rem 3rem;
+}
+
+body a.button:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+}
