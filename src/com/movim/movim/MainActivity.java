@@ -3,7 +3,9 @@ package com.movim.movim;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -28,6 +30,7 @@ import android.widget.ProgressBar;
         
         webview.getSettings().setJavaScriptEnabled(true);
         webview.getSettings().setDomStorageEnabled(true);
+        webview.getSettings().setMixedContentMode(0);
 
         progressbar = (ProgressBar)findViewById(R.id.progress);
         progressbar.setIndeterminate(true);
@@ -54,9 +57,18 @@ import android.widget.ProgressBar;
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         		webview.loadUrl("file:///android_asset/error.html");
         	}
-        	
-        }
-        );
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url != null && url.startsWith("https://pod.movim.eu/")) {
+                    return false;
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                }
+            }
+        });
+
         webview.loadUrl("https://pod.movim.eu/");
     }
     
