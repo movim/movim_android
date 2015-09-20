@@ -32,6 +32,7 @@ import java.net.URL;
 public class MainActivity extends Activity {
     private WebView webview;
     private ProgressBar progressbar;
+    private Integer counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +79,7 @@ public class MainActivity extends Activity {
                 String origin = Uri.parse(view.getUrl()).getHost();
                 String aim = Uri.parse(url).getHost();
 
-                if(origin.isEmpty() || origin.equals(aim)) {
+                if (origin.isEmpty() || origin.equals(aim)) {
                     return false;
                 } else {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -94,6 +95,20 @@ public class MainActivity extends Activity {
         });
 
         webview.loadUrl("file:///android_asset/index.html");
+
+        onNewIntent(getIntent());
+    }
+
+    @Override
+    public void onNewIntent(Intent intent){
+        Bundle b = intent.getExtras();
+
+        if(b != null) {
+            this.counter = 0;
+            String action = (String) b.get("url");
+            System.out.println("url" + action);
+            webview.loadUrl(action);
+        }
     }
 
     @JavascriptInterface
@@ -101,18 +116,32 @@ public class MainActivity extends Activity {
         Toast.makeText(this, toast, Toast.LENGTH_SHORT).show();
     }
     @JavascriptInterface
-    public void showNotification(String title, String body, String picture) {
+    public void showNotification(String title, String body, String picture, String action) {
         Bitmap pictureBitmap = getBitmapFromURL(picture);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+        Intent i = new Intent(this, MainActivity.class);
+
+        if(action != null) {
+            i.putExtra("url", action);
+            i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        }
+
+        PendingIntent pi = PendingIntent.getActivity(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        this.counter++;
+
         //Drawable d = getPackageManager().getApplicationIcon(getApplicationInfo());
         Notification notification = new Notification.Builder(this)
-                .setSmallIcon(android.R.drawable.sym_action_chat)
+                .setSmallIcon(R.drawable.ic_stat_name)
                 .setLargeIcon(pictureBitmap)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setContentIntent(pi)
                 .setAutoCancel(true)
+                .setColor(Color.parseColor("#3F51B5"))
+                .setNumber(this.counter)
                 .build();
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(0, notification);
     }
