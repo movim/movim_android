@@ -37,7 +37,7 @@ var API = {
                     li.dataset.host = url.host;
 
                     li.onclick = function() {
-                        if(Android != null) Android.showToast('Pod set to ' + this.dataset.host);
+                        //if(Android != null) Android.showToast('Pod set to ' + this.dataset.host);
                         document.querySelector('#list input[name=url]').value = this.dataset.url;
                     }
 
