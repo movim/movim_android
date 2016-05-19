@@ -5,10 +5,14 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -27,15 +31,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @SuppressLint("SetJavaScriptEnabled")
 public class MainActivity extends Activity {
     private WebView webview;
     private ProgressBar progressbar;
-    private Integer counter = 0;
+    private HashMap<String, List<String>> notifs;
+    private static final String NOTIFICATION_DELETED_ACTION = "NOTIFICATION_DELETED";
+    private static MainActivity instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        this.notifs = new HashMap<String, List<String>>();
+
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -97,18 +108,27 @@ public class MainActivity extends Activity {
         webview.loadUrl("file:///android_asset/index.html");
 
         onNewIntent(getIntent());
+
+        instance = this;
     }
 
     @Override
     public void onNewIntent(Intent intent){
         Bundle b = intent.getExtras();
-
+        String action = intent.getAction();
         if(b != null) {
-            this.counter = 0;
-            String action = (String) b.get("url");
-            System.out.println("url" + action);
-            webview.loadUrl(action);
+            if (action != null && action.equals("notification_cancelled")) {
+                String key = (String) b.get("url");
+                this.notifs.remove(key);
+            } else {
+                String url = (String) b.get("url");
+                webview.loadUrl(url);
+            }
         }
+    }
+
+    public static MainActivity getInstance(){
+        return instance;
     }
 
     @JavascriptInterface
@@ -118,33 +138,78 @@ public class MainActivity extends Activity {
     @JavascriptInterface
     public void showNotification(String title, String body, String picture, String action) {
         Bitmap pictureBitmap = getBitmapFromURL(picture);
-        Intent i = new Intent(this, MainActivity.class);
 
+        Intent i = new Intent(this, MainActivity.class);
         if(action != null) {
             i.putExtra("url", action);
             i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
-
         PendingIntent pi = PendingIntent.getActivity(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        this.counter++;
+        // The deleteIntent declaration
+        Intent deleteIntent = new Intent(NOTIFICATION_DELETED_ACTION);
+        if(action != null) {
+            deleteIntent.putExtra("url", action);
+        }
+        PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(this, 0, deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        registerReceiver(receiver, new IntentFilter(NOTIFICATION_DELETED_ACTION));
 
-        //Drawable d = getPackageManager().getApplicationIcon(getApplicationInfo());
+        //Integer counter;
+        List<String> messages = null;
+
+        // There is already pending notifications
+        if(this.notifs.get(action) != null) {
+            messages = this.notifs.get(action);
+        } else {
+            messages = new ArrayList<String>();
+        }
+
+        messages.add(body);
+
+        if(messages.size() > 5) {
+            messages.remove(0);
+        }
+
+        this.notifs.put(action, messages);
+
+        // We create the inbox
+        Notification.InboxStyle style = new Notification.InboxStyle();
+        for (int j = 0; j < messages.size(); j++) {
+            style.addLine(messages.get(j));
+        }
+
+        style.setBigContentTitle(title);
+
         Notification notification = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setLargeIcon(pictureBitmap)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setContentIntent(pi)
+                .setDeleteIntent(pendingDeleteIntent)
                 .setAutoCancel(true)
                 .setColor(Color.parseColor("#3F51B5"))
-                .setNumber(this.counter)
+                .setNumber(messages.size())
+                .setStyle(style)
+                .setGroup("movim")
                 .build();
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notification);
+        notificationManager.notify(action, 0, notification);
     }
+
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle b = intent.getExtras();
+            if(b != null) {
+                String key = (String) b.get("url");
+                MainActivity.getInstance().notifs.remove(key);
+            }
+
+            unregisterReceiver(this);
+        }
+    };
 
     public static Bitmap getBitmapFromURL(String src) {
         try {
