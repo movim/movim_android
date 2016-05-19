@@ -112,6 +112,7 @@ public class MainActivity extends Activity {
     @Override
     public void onNewIntent(Intent intent){
         if(intent.getAction() != null) {
+            this.notifs.remove(intent.getAction());
             webview.loadUrl(intent.getAction());
         }
     }
