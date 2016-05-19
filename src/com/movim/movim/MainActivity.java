@@ -40,7 +40,6 @@ public class MainActivity extends Activity {
     private WebView webview;
     private ProgressBar progressbar;
     private HashMap<String, List<String>> notifs;
-    private static final String NOTIFICATION_DELETED_ACTION = "NOTIFICATION_DELETED";
     private static MainActivity instance;
 
     @Override
@@ -107,23 +106,13 @@ public class MainActivity extends Activity {
 
         webview.loadUrl("file:///android_asset/index.html");
 
-        onNewIntent(getIntent());
-
         instance = this;
     }
 
     @Override
     public void onNewIntent(Intent intent){
-        Bundle b = intent.getExtras();
-        String action = intent.getAction();
-        if(b != null) {
-            if (action != null && action.equals("notification_cancelled")) {
-                String key = (String) b.get("url");
-                this.notifs.remove(key);
-            } else {
-                String url = (String) b.get("url");
-                webview.loadUrl(url);
-            }
+        if(intent.getAction() != null) {
+            webview.loadUrl(intent.getAction());
         }
     }
 
@@ -141,18 +130,15 @@ public class MainActivity extends Activity {
 
         Intent i = new Intent(this, MainActivity.class);
         if(action != null) {
-            i.putExtra("url", action);
+            i.setAction(action);
             i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
         PendingIntent pi = PendingIntent.getActivity(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // The deleteIntent declaration
-        Intent deleteIntent = new Intent(NOTIFICATION_DELETED_ACTION);
-        if(action != null) {
-            deleteIntent.putExtra("url", action);
-        }
+        Intent deleteIntent = new Intent(action);
         PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(this, 0, deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        registerReceiver(receiver, new IntentFilter(NOTIFICATION_DELETED_ACTION));
+        registerReceiver(receiver, new IntentFilter(action));
 
         //Integer counter;
         List<String> messages = null;
@@ -201,12 +187,9 @@ public class MainActivity extends Activity {
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle b = intent.getExtras();
-            if(b != null) {
-                String key = (String) b.get("url");
-                MainActivity.getInstance().notifs.remove(key);
+            if(intent.getAction() != null) {
+                MainActivity.getInstance().notifs.remove(intent.getAction());
             }
-
             unregisterReceiver(this);
         }
     };
