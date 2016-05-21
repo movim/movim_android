@@ -12,7 +12,6 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -56,6 +55,9 @@ public class MainActivity extends Activity {
         webview.getSettings().setJavaScriptEnabled(true);
         webview.getSettings().setDomStorageEnabled(true);
         webview.getSettings().setMixedContentMode(0);
+        if (Build.VERSION.SDK_INT >= 21)
+            webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
+            webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
 
         progressbar = (ProgressBar) findViewById(R.id.progress);
         progressbar.setIndeterminate(true);
