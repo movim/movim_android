@@ -55,10 +55,10 @@ public class MainActivity extends Activity {
         webview.getSettings().setJavaScriptEnabled(true);
         webview.getSettings().setDomStorageEnabled(true);
         webview.getSettings().setMixedContentMode(0);
-        if (Build.VERSION.SDK_INT >= 21)
+        if (Build.VERSION.SDK_INT >= 21) {
             webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
-            webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
-
+        }
+        
         progressbar = (ProgressBar) findViewById(R.id.progress);
         progressbar.setIndeterminate(true);
 
