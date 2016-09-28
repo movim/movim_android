@@ -2,11 +2,14 @@ package com.movim.movim;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
@@ -16,12 +19,16 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.Window;
+import android.webkit.HttpAuthHandler;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.webkit.JavascriptInterface;
@@ -104,6 +111,37 @@ public class MainActivity extends Activity {
             public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
                 handler.proceed(); // Ignore SSL certificate errors
             }
+
+            public void onReceivedHttpAuthRequest(WebView view, final HttpAuthHandler handler, String host, String realm) {
+                final EditText usernameInput = new EditText(MainActivity.getInstance());
+                final EditText passwordInput = new EditText(MainActivity.getInstance());
+                
+                usernameInput.setHint("Username");
+                passwordInput.setHint("Password");
+                passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+                LinearLayout ll = new LinearLayout(MainActivity.getInstance());
+                ll.setOrientation(LinearLayout.VERTICAL);
+                ll.addView(usernameInput);
+                ll.addView(passwordInput);
+
+                Builder authDialog = new AlertDialog
+                        .Builder(MainActivity.getInstance())
+
+                        .setView(ll)
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                handler.proceed(usernameInput.getText().toString(), passwordInput.getText().toString());
+                                dialog.dismiss();
+                            }
+                        });
+
+                if(view != null)
+                    authDialog.show();
+
+            }
+
         });
 
         webview.loadUrl("file:///android_asset/index.html");
