@@ -112,10 +112,15 @@ public class MainActivity extends Activity {
                 handler.proceed(); // Ignore SSL certificate errors
             }
 
-            public void onReceivedHttpAuthRequest(WebView view, final HttpAuthHandler handler, String host, String realm) {
+            public void onReceivedHttpAuthRequest(final WebView view, final HttpAuthHandler handler, final String host, final String realm) {
+                final String[] httpAuth = new String[2];
+                final String[] viewAuth = view.getHttpAuthUsernamePassword(host, realm);
                 final EditText usernameInput = new EditText(MainActivity.getInstance());
                 final EditText passwordInput = new EditText(MainActivity.getInstance());
-                
+
+                httpAuth[0] = viewAuth != null ? viewAuth[0] : new String();
+                httpAuth[1] = viewAuth != null ? viewAuth[1] : new String();
+
                 usernameInput.setHint("Username");
                 passwordInput.setHint("Password");
                 passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -126,22 +131,26 @@ public class MainActivity extends Activity {
                 ll.addView(passwordInput);
 
                 Builder authDialog = new AlertDialog
-                        .Builder(MainActivity.getInstance())
+                    .Builder(MainActivity.getInstance())
+                    .setTitle("Please login")
+                    .setView(ll)
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            httpAuth[0] = usernameInput.getText().toString();
+                            httpAuth[1] = passwordInput.getText().toString();
+                            view.setHttpAuthUsernamePassword(host, realm, httpAuth[0], httpAuth[1]);
+                            handler.proceed(httpAuth[0], httpAuth[1]);
+                            dialog.dismiss();
+                        }
+                    });
 
-                        .setView(ll)
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                handler.proceed(usernameInput.getText().toString(), passwordInput.getText().toString());
-                                dialog.dismiss();
-                            }
-                        });
-
-                if(view != null)
+                if (!handler.useHttpAuthUsernamePassword()) {
                     authDialog.show();
-
+                } else {
+                    handler.proceed(httpAuth[0], httpAuth[1]);
+                }
             }
-
         });
 
         webview.loadUrl("file:///android_asset/index.html");
