@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -158,7 +159,7 @@ public class MainActivity extends Activity {
 				final String[] viewAuth = view.getHttpAuthUsernamePassword(host, realm);
 				final EditText usernameInput = new EditText(MainActivity.getInstance());
 				final EditText passwordInput = new EditText(MainActivity.getInstance());
-
+ 
 				httpAuth[0] = viewAuth != null ? viewAuth[0] : new String();
 				httpAuth[1] = viewAuth != null ? viewAuth[1] : new String();
 
@@ -203,6 +204,12 @@ public class MainActivity extends Activity {
 			webview.loadUrl(intent.getAction());
 		}
 	}
+	
+	// Prevent the webview from reloading on device rotation
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+	};
 
 	public static MainActivity getInstance() {
 		return instance;
