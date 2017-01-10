@@ -149,8 +149,8 @@ public class MainActivity extends Activity {
 				}
 			}
 
-			public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-				handler.proceed(); // Ignore SSL certificate errors
+			public void onReceivedSslError(WebView view, final SslErrorHandler handler, SslError error) {
+				webview.loadUrl("file:///android_asset/ssl.html");
 			}
 
 			public void onReceivedHttpAuthRequest(final WebView view, final HttpAuthHandler handler, final String host,
