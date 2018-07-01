@@ -5,7 +5,7 @@ var API = {
             var url = new URL(localStorage.mainPod);
             document.querySelector('#list input').value = localStorage.mainPod;
             document.querySelector('#redirect h2 span').innerHTML = url.host;
-            setTimeout(function() { if(API.inhibed == false) window.location.href = localStorage.mainPod; } , 3000);
+            setTimeout(function() { if(API.inhibed == false) window.location.href = localStorage.mainPod; } , 1500);
         } else {
             API.get();
         }

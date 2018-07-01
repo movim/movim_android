@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		setTheme(R.style.SplashTheme);
 		this.notifs = new HashMap<String, List<String>>();
 
 		super.onCreate(savedInstanceState);
@@ -68,6 +69,7 @@ public class MainActivity extends Activity {
 		webview.getSettings().setJavaScriptEnabled(true);
 		webview.getSettings().setDomStorageEnabled(true);
 		webview.getSettings().setMixedContentMode(0);
+		
 		if (Build.VERSION.SDK_INT >= 21) {
 			webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
 		}
@@ -75,9 +77,9 @@ public class MainActivity extends Activity {
 		progressbar = (ProgressBar) findViewById(R.id.progress);
 		progressbar.setIndeterminate(true);
 
-		if (Build.VERSION.SDK_INT >= 21) {
+		/*if (Build.VERSION.SDK_INT >= 21) {
 			getWindow().setStatusBarColor(Color.rgb(48, 63, 159));
-		}
+		}*/
 
 		webview.addJavascriptInterface(this, "Android");
 
@@ -141,12 +143,12 @@ public class MainActivity extends Activity {
 
 				if (origin.isEmpty() || origin.equals(aim)) {
 					return false;
-				} else {
-					Intent intent = new Intent(Intent.ACTION_VIEW);
-					intent.setData(Uri.parse(url));
-					startActivity(intent);
-					return true;
 				}
+
+				Intent intent = new Intent(Intent.ACTION_VIEW);
+				intent.setData(Uri.parse(url));
+				startActivity(intent);
+				return true;
 			}
 
 			public void onReceivedSslError(WebView view, final SslErrorHandler handler, SslError error) {
