@@ -33,6 +33,7 @@ import android.view.KeyEvent;
 import android.view.Window;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -130,6 +131,10 @@ public class MainActivity extends Activity {
 				return true;
 			}
 
+			@Override
+			public void onPermissionRequest(final PermissionRequest request) {
+				request.grant(request.getResources());
+			}
 		});
 
 		webview.setWebViewClient(new WebViewClient() {
