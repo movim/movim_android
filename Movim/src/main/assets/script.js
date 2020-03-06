@@ -1,20 +1,12 @@
 var API = {
-    inhibed: false,
     init: function() {
         if(localStorage.mainPod) {
-            var url = new URL(localStorage.mainPod);
-            document.querySelector('#list input').value = localStorage.mainPod;
-            document.querySelector('#redirect h2 span').innerHTML = url.host;
-            setTimeout(function() { if(API.inhibed == false) window.location.href = localStorage.mainPod; } , 1500);
+            window.location.href = localStorage.mainPod;
         } else {
-            API.get();
+            window.location.href = 'file:///android_asset/list.html';
         }
     },
-    inhibit: function() {
-        API.inhibed = true;
-    },
     get: function() {
-        API.inhibit();
         document.querySelector('body').className = 'list';
         var xhr = new XMLHttpRequest();
         xhr.open('GET', 'https://api.movim.eu/pods/favorite', true);
@@ -37,7 +29,6 @@ var API = {
                     li.dataset.host = url.host;
 
                     li.onclick = function() {
-                        //if(Android != null) Android.showToast('Pod set to ' + this.dataset.host);
                         document.querySelector('#list input[name=url]').value = this.dataset.url;
                     }
 
@@ -65,7 +56,7 @@ var API = {
         var input = document.querySelector('#list input[name=url]');
         if(input.validity.valid) {
             localStorage.mainPod = input.value;
-            API.reload();
+            API.init();
         }
     },
     reload: function() {

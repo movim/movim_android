@@ -78,12 +78,7 @@ public class MainActivity extends Activity {
 		progressbar = (ProgressBar) findViewById(R.id.progress);
 		progressbar.setIndeterminate(true);
 
-		/*if (Build.VERSION.SDK_INT >= 21) {
-			getWindow().setStatusBarColor(Color.rgb(48, 63, 159));
-		}*/
-
 		webview.addJavascriptInterface(this, "Android");
-
 		webview.setWebChromeClient(new WebChromeClient() {
 			public void onProgressChanged(WebView view, int progress) {
 				progressbar.setProgress(progress);
@@ -143,6 +138,11 @@ public class MainActivity extends Activity {
 			}
 
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				if (url.equals("movim://changepod")) {
+					webview.loadUrl("file:///android_asset/list.html");
+					return true;
+				}
+
 				String origin = Uri.parse(view.getUrl()).getHost();
 				String aim = Uri.parse(url).getHost();
 

@@ -2,6 +2,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
+    android:layout_marginTop="-24dp"
     android:fitsSystemWindows="true">
 
     <WebView

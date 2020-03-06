@@ -25,7 +25,7 @@ body {
     margin: 0 auto;
 
     padding: 0 2rem;
-    /*padding-top: 6rem;*/
+    padding-top: 3rem;
 
     background-image: /*url("img/logo_cloud.svg"), */radial-gradient(circle farthest-corner at right bottom,#5265ce 0,#213399 100%);
     background-size: /*auto 27px, */100% 100%;
