@@ -73,6 +73,7 @@ public class MainActivity extends Activity {
 		
 		if (Build.VERSION.SDK_INT >= 21) {
 			webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
+			getWindow().setNavigationBarColor(Color.parseColor("#000000"));
 		}
 
 		progressbar = (ProgressBar) findViewById(R.id.progress);
