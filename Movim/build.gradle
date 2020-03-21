@@ -2,12 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "28.0.0"
 
     defaultConfig {
         applicationId "com.movim.movim"
         minSdkVersion 21
-        targetSdkVersion 21
+        targetSdkVersion 26
+        versionCode 12
+        versionName "0.17.0.0"
     }
 
     buildTypes {
