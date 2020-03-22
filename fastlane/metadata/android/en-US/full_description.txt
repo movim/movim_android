@@ -1,0 +1,17 @@
+Movim is a kickass distributed social networking platform that protects your privacy an comes with fully integrated social and instant messaging features.
+
+Movim is fully built on the XMPP standard protocol, it can therefore be used with any existing XMPP account and integrates with all the existing XMPP clients such as Conversations, Dino or Gajim.
+
+This Android client allows you to transparently use Movim as an app.
+You can pick one of the common Movim instances already listed or use your own in the Pod chooser panel.
+
+You can then have access to all the Movim features including:
+
+* One to one chat
+* Groupchat
+* Publishing posts on your Blog or in Communities
+* Reading, liking, commenting posts
+* Discovering new groupchats, Communities, contacts…
+* Taking pictures, drawing or sharing documents and images on your blog or to your contacts
+
+Have a look at all the other features on our <a href="https://movim.eu/">official website</a>.

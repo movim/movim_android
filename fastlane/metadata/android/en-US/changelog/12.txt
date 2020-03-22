@@ -1,0 +1,4 @@
+* Fits with the 0.17.1 Movim release
+* Better UI integration
+* Quicker launch
+

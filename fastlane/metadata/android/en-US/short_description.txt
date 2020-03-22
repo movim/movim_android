@@ -1,0 +1,1 @@
+Official Android client for the Movim decentralized social platform based on XMPP
