@@ -13,7 +13,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.support.v4.app.NotificationCompat;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -30,6 +32,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.Window;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
@@ -76,6 +79,14 @@ public class MainActivity extends Activity {
 			getWindow().setNavigationBarColor(Color.parseColor("#000000"));
 		}
 
+		if (Build.VERSION.SDK_INT >= 19) {
+			// chromium, enable hardware acceleration
+			webview.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+		} else {
+			// older android version, disable hardware acceleration
+			webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+		}
+
 		progressbar = (ProgressBar) findViewById(R.id.progress);
 		progressbar.setIndeterminate(true);
 
@@ -91,6 +102,10 @@ public class MainActivity extends Activity {
 					progressbar.setVisibility(ProgressBar.GONE);
 				}
 
+			}
+
+			public void onCloseWindow(WebView view){
+				super.onCloseWindow(view);
 			}
 
 			public void openFileChooser(ValueCallback<Uri> uploadMsg) {
@@ -246,8 +261,28 @@ public class MainActivity extends Activity {
 	}
 
 	@JavascriptInterface
+	public void openVisio(String url) {
+		Intent intent = new Intent(this, VisioActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.putExtra("url", url);
+		startActivity(intent);
+	}
+
+	@JavascriptInterface
 	public void showToast(String toast) {
 		Toast.makeText(this, toast, Toast.LENGTH_SHORT).show();
+	}
+
+	@JavascriptInterface
+	public void clearNotifications(String action) {
+		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		notificationManager.cancel(action, 0);
+
+		if (this.notifs.get(action) != null) {
+			this.notifs.remove(action);
+		}
+
+		this.updateNotifications();
 	}
 
 	@JavascriptInterface
@@ -286,21 +321,58 @@ public class MainActivity extends Activity {
 		this.notifs.put(action, messages);
 
 		// We create the inbox
-		Notification.InboxStyle style = new Notification.InboxStyle();
+		NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
 		for (int j = 0; j < messages.size(); j++) {
 			style.addLine(messages.get(j));
 		}
 
 		style.setBigContentTitle(title);
 
-		Notification notification = new Notification.Builder(this).setSmallIcon(R.drawable.ic_stat_name)
-				.setLargeIcon(pictureBitmap).setContentTitle(title).setContentText(body).setContentIntent(pi)
-				.setDeleteIntent(pendingDeleteIntent).setAutoCancel(true).setColor(Color.parseColor("#3F51B5"))
-				.setLights(Color.parseColor("#3F51B5"), 1000, 5000).setNumber(messages.size()).setStyle(style)
-				.setGroup("movim").build();
-
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		String channelId = "channel-movim";
+		String channelName = "Movim";
+		String groupId = "movim";
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			NotificationChannel mChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+			notificationManager.createNotificationChannel(mChannel);
+		}
+
+		Notification notification = new NotificationCompat.Builder(this, channelId)
+			.setSmallIcon(R.drawable.ic_stat_name)
+			.setLargeIcon(pictureBitmap)
+			.setContentTitle(title)
+			.setContentText(body)
+			.setContentIntent(pi)
+			.setDeleteIntent(pendingDeleteIntent).setAutoCancel(true).setColor(Color.parseColor("#3F51B5"))
+			.setLights(Color.parseColor("#3F51B5"), 1000, 5000)
+			.setNumber(messages.size())
+			.setStyle(style)
+			.setGroup(groupId)
+			.build();
 		notificationManager.notify(action, 0, notification);
+
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			Notification summaryNotification = new NotificationCompat.Builder(this, channelId)
+					.setSmallIcon(R.drawable.ic_stat_name)
+					.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+					.setGroup(groupId)
+					.setGroupSummary(true)
+					.setAutoCancel(true)
+					.build();
+			notificationManager.notify("summary", 0, summaryNotification);
+		}
+	}
+
+	protected void updateNotifications() {
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			int counter = notificationManager.getActiveNotifications().length;
+
+			if (counter <= 1) {
+				notificationManager.cancel("summary", 0);
+			}
+		}
 	}
 
 	private final BroadcastReceiver receiver = new BroadcastReceiver() {

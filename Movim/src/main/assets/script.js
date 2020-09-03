@@ -59,6 +59,14 @@ var API = {
             API.init();
         }
     },
+    share: function() {
+        if(localStorage.mainPod) {
+            var url = window.location.search.substr(1);
+            window.location.href = localStorage.mainPod + '?share/' + url;
+        } else {
+            window.location.href = 'file:///android_asset/list.html';
+        }
+    },
     reload: function() {
         window.location.reload();
     }
