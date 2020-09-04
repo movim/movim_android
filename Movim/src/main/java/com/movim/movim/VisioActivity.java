@@ -1,9 +1,14 @@
 package com.movim.movim;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
@@ -39,7 +44,7 @@ public class VisioActivity extends Activity {
         webview.setWebChromeClient(new WebChromeClient() {
             public void onCloseWindow(WebView view){
                 super.onCloseWindow(view);
-                finishAndRemoveTask();
+                endCall();
             }
 
             @Override
@@ -60,10 +65,42 @@ public class VisioActivity extends Activity {
         });
 
         webview.loadUrl("https://" + url);
+
+        String channelId = "channel-movim";
+        String groupId = "movim";
+
+        /* Persistent notification */
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        Intent i = new Intent(this, VisioActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pi = PendingIntent.getActivity(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_stat_name)
+                .setOngoing(true)
+                .setContentTitle("Call")
+                .setContentText("…in progress")
+                .setContentIntent(pi)
+                .setLights(Color.parseColor("#3F51B5"), 1000, 5000)
+                .setGroup(groupId)
+                .build();
+        notificationManager.notify("call", 0, notification);
+    }
+
+    protected void onDestroy() {
+        super.onDestroy();
+        NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel("call", 0);
+    }
+
+    private void endCall() {
+        this.finishAndRemoveTask();
     }
 
     @JavascriptInterface
     public void closePopUpWebview() {
-        this.finishAndRemoveTask();
+        this.endCall();
     }
 }
