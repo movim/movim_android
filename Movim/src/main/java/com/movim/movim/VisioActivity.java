@@ -78,7 +78,7 @@ public class VisioActivity extends Activity {
         PendingIntent pi = PendingIntent.getActivity(this, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification notification = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_stat_name)
+                .setSmallIcon(R.drawable.ic_phone)
                 .setOngoing(true)
                 .setContentTitle("Call")
                 .setContentText("…in progress")
@@ -87,12 +87,15 @@ public class VisioActivity extends Activity {
                 .setGroup(groupId)
                 .build();
         notificationManager.notify("call", 0, notification);
+
+        MainActivity.getInstance().updateNotifications();
     }
 
     protected void onDestroy() {
         super.onDestroy();
         NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel("call", 0);
+        MainActivity.getInstance().updateNotifications();
     }
 
     private void endCall() {
