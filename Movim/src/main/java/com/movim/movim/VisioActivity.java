@@ -89,11 +89,15 @@ public class VisioActivity extends Activity {
                 .build();
         notificationManager.notify("call", 0, notification);
 
-        MainActivity.getInstance().updateNotifications();
+        if (MainActivity.getInstance() != null) {
+            MainActivity.getInstance().updateNotifications();
+        }
     }
 
     protected void onDestroy() {
         super.onDestroy();
+        this.endCall();
+
         NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel("call", 0);
         MainActivity.getInstance().updateNotifications();
@@ -101,6 +105,9 @@ public class VisioActivity extends Activity {
 
     private void endCall() {
         this.finishAndRemoveTask();
+
+        webview.destroy();
+        webview = null;
     }
 
     @JavascriptInterface
