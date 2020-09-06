@@ -73,6 +73,7 @@ public class MainActivity extends Activity {
 		webview.getSettings().setJavaScriptEnabled(true);
 		webview.getSettings().setDomStorageEnabled(true);
 		webview.getSettings().setMixedContentMode(0);
+		webview.getSettings().setMediaPlaybackRequiresUserGesture(false);
 		
 		if (Build.VERSION.SDK_INT >= 21) {
 			webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
