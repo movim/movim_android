@@ -1,0 +1,4 @@
+* Fits with the 0.18 Movim release
+* Grouped notifications
+* Better video-conference integration
+* Add Share to Post intent

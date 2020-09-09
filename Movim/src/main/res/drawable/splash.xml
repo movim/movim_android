@@ -12,6 +12,6 @@
         android:gravity="center"
         android:width="100dp"
         android:height="100dp"
-        android:drawable="@drawable/logo">
+        android:drawable="@drawable/ic_vectorial">
     </item>
 </layer-list>

@@ -356,7 +356,7 @@ public class MainActivity extends Activity {
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 			Notification summaryNotification = new NotificationCompat.Builder(this, channelId)
 					.setSmallIcon(R.drawable.ic_stat_name)
-					.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+					.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_vectorial))
 					.setGroup(groupId)
 					.setGroupSummary(true)
 					.setAutoCancel(true)
