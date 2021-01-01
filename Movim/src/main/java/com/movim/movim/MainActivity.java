@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -15,6 +16,9 @@ import android.app.AlertDialog.Builder;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -30,6 +34,7 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.View;
@@ -54,9 +59,9 @@ public class MainActivity extends Activity {
 	private HashMap<String, List<String>> notifs;
 	private static MainActivity instance;
 
-	private ValueCallback<Uri> mUploadMessage;
 	private ValueCallback<Uri[]> mUploadMessageArray;
 	private final static int FILE_REQUEST_CODE = 1;
+	private final static int CAMERA_REQUEST_CODE = 2;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +73,12 @@ public class MainActivity extends Activity {
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 
-		webview = (WebView) findViewById(R.id.webview);
+		webview = findViewById(R.id.webview);
 
 		webview.getSettings().setJavaScriptEnabled(true);
 		webview.getSettings().setDomStorageEnabled(true);
 		webview.getSettings().setMixedContentMode(0);
+		webview.getSettings().setAppCacheEnabled(true);
 		webview.getSettings().setMediaPlaybackRequiresUserGesture(false);
 		
 		if (Build.VERSION.SDK_INT >= 21) {
@@ -88,11 +94,17 @@ public class MainActivity extends Activity {
 			webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 		}
 
-		progressbar = (ProgressBar) findViewById(R.id.progress);
+		progressbar = findViewById(R.id.progress);
 		progressbar.setIndeterminate(true);
 
 		webview.addJavascriptInterface(this, "Android");
 		webview.setWebChromeClient(new WebChromeClient() {
+			@Override
+			public void onPermissionRequest(PermissionRequest request) {
+				checkAndRequestPermissions();
+				request.grant(request.getResources());
+			}
+
 			public void onProgressChanged(WebView view, int progress) {
 				progressbar.setProgress(progress);
 				if (progress < 100 && progress > 0 && progressbar.getVisibility() == ProgressBar.GONE) {
@@ -102,33 +114,12 @@ public class MainActivity extends Activity {
 				if (progress == 100) {
 					progressbar.setVisibility(ProgressBar.GONE);
 				}
-
 			}
 
-			public void onCloseWindow(WebView view){
-				super.onCloseWindow(view);
-			}
-
-			public void openFileChooser(ValueCallback<Uri> uploadMsg) {
-				openFileChooser(uploadMsg, null, null);
-			}
-
-			public void openFileChooser(ValueCallback uploadMsg, String acceptType) {
-				openFileChooser(uploadMsg, null, null);
-			}
-
-			public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
-				mUploadMessage = uploadMsg;
-				Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-				i.addCategory(Intent.CATEGORY_OPENABLE);
-				i.setType("*/*");
-				MainActivity.this.startActivityForResult(Intent.createChooser(i, "File Browser"), FILE_REQUEST_CODE);
-			}
-
-			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> uploadMessageArray,
-					WebChromeClient.FileChooserParams fileChooserParams) {
-				if (mUploadMessageArray != null)
+			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> uploadMessageArray, WebChromeClient.FileChooserParams fileChooserParams) {
+				if (mUploadMessageArray != null) {
 					mUploadMessageArray.onReceiveValue(null);
+				}
 
 				mUploadMessageArray = uploadMessageArray;
 
@@ -141,11 +132,6 @@ public class MainActivity extends Activity {
 				ci.putExtra(Intent.EXTRA_TITLE, "File Browser");
 				startActivityForResult(ci, FILE_REQUEST_CODE);
 				return true;
-			}
-
-			@Override
-			public void onPermissionRequest(final PermissionRequest request) {
-				request.grant(request.getResources());
 			}
 		});
 
@@ -221,6 +207,38 @@ public class MainActivity extends Activity {
 		instance = this;
 	}
 
+	private boolean checkAndRequestPermissions() {
+		int permissionCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+		int permissionRecordAudio = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
+
+		List<String> listPermissionsNeeded = new ArrayList<>();
+		if (permissionCamera != PackageManager.PERMISSION_GRANTED) {
+			listPermissionsNeeded.add(Manifest.permission.CAMERA);
+		}
+		if (permissionRecordAudio != PackageManager.PERMISSION_GRANTED) {
+			listPermissionsNeeded.add(Manifest.permission.RECORD_AUDIO);
+		}
+		if (!listPermissionsNeeded.isEmpty()) {
+			ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), CAMERA_REQUEST_CODE);
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+		if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+			Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
+		} else {
+			Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+		}
+
+		webview.reload();
+	}
+
 	@Override
 	public void onNewIntent(Intent intent) {
 		if (intent.getAction() != null) {
@@ -240,25 +258,32 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		if (mUploadMessageArray == null)
+			return;
+
+		mUploadMessageArray.onReceiveValue(new Uri[]{});
+		mUploadMessageArray = null;
+	}
+
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 
-		if (requestCode != FILE_REQUEST_CODE || resultCode != Activity.RESULT_OK || data.getData() == null)
+		if (requestCode != FILE_REQUEST_CODE || mUploadMessageArray == null) {
 			return;
-
-		if (Build.VERSION.SDK_INT >= 21) {
-			if (mUploadMessageArray == null)
-				return;
-
-			mUploadMessageArray.onReceiveValue(new Uri[] { data.getData() });
-			mUploadMessageArray = null;
-		} else {
-			if (mUploadMessage == null)
-				return;
-
-			mUploadMessage.onReceiveValue(data.getData());
-			mUploadMessage = null;
 		}
+
+		Uri[] results = null;
+		if (resultCode == Activity.RESULT_OK) {
+			String dataString = data.getDataString();
+			if (dataString != null) {
+				results = new Uri[]{Uri.parse(dataString)};
+			}
+		}
+		mUploadMessageArray.onReceiveValue(results);
+		mUploadMessageArray = null;
 	}
 
 	@JavascriptInterface
