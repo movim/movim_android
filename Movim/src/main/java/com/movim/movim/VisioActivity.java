@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.util.Log;
+import androidx.core.app.NotificationCompat;
+
 import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
@@ -89,9 +89,9 @@ public class VisioActivity extends Activity {
                 .build();
         notificationManager.notify("call", 0, notification);
 
-        if (MainActivity.getInstance() != null) {
-            MainActivity.getInstance().updateNotifications();
-        }
+        Intent notificationService = new Intent(this, NotificationService.class);
+        notificationService.setAction("update");
+        startService(notificationService);
     }
 
     protected void onDestroy() {
@@ -100,7 +100,10 @@ public class VisioActivity extends Activity {
 
         NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel("call", 0);
-        MainActivity.getInstance().updateNotifications();
+
+        Intent notificationService = new Intent(this, NotificationService.class);
+        notificationService.setAction("update");
+        startService(notificationService);
     }
 
     private void endCall() {
