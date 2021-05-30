@@ -4,14 +4,14 @@
         <shape xmlns:android="http://schemas.android.com/apk/res/android"
             android:shape="rectangle">
             <gradient android:type="radial" android:gradientRadius="100%p"
-                android:centerX="1" android:centerY="1"
-                android:startColor="#5265ce" android:endColor="#213399" />
+                android:centerX="1" android:centerY="0.5"
+                android:startColor="#3F51B5" android:endColor="#FE222e75" />
         </shape>
     </item>
     <item
         android:gravity="center"
-        android:width="100dp"
-        android:height="100dp"
-        android:drawable="@drawable/ic_vectorial">
+        android:width="150dp"
+        android:height="150dp"
+        android:drawable="@drawable/ic_logo_foreground">
     </item>
 </layer-list>

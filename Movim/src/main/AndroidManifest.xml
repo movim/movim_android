@@ -15,7 +15,8 @@
     <application
         android:allowBackup="true"
         android:hardwareAccelerated="true"
-        android:icon="@drawable/ic_vectorial"
+        android:icon="@mipmap/ic_logo"
+        android:roundIcon="@mipmap/ic_logo_round"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <service

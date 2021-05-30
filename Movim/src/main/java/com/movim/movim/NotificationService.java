@@ -11,10 +11,10 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.messaging.CommonNotificationBuilder;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -69,19 +69,18 @@ public class NotificationService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         if (remoteMessage.getData().size() > 0) {
-            showNotification(
+            if (remoteMessage.getData().get("clear") != null) {
+                clearNotifications(
+                    remoteMessage.getData().get("action")
+                );
+            } else {
+                showNotification(
                     remoteMessage.getData().get("title"),
                     remoteMessage.getData().get("body"),
                     remoteMessage.getData().get("image"),
                     remoteMessage.getData().get("action")
-            );
-        } else if (remoteMessage.getNotification() != null) {
-            /*showNotification(
-                remoteMessage.getNotification().getTitle(),
-                remoteMessage.getNotification().getBody(),
-                remoteMessage.getNotification().getImageUrl().toString(),
-                remoteMessage.getNotification().getClickAction()
-            );*/
+                );
+            }
         }
 
         //super.onMessageReceived(remoteMessage);
@@ -91,7 +90,7 @@ public class NotificationService extends FirebaseMessagingService {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null) {
-                //MainActivity.getInstance().notifs.remove(intent.getAction());
+                clearNotifications(intent.getAction());
             }
             unregisterReceiver(this);
         }
@@ -125,7 +124,7 @@ public class NotificationService extends FirebaseMessagingService {
 
         messages.add(body);
 
-        if (messages.size() > 5) {
+        if (messages.size() > 3) {
             messages.remove(0);
         }
 
@@ -149,7 +148,7 @@ public class NotificationService extends FirebaseMessagingService {
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        Notification notification = new NotificationCompat.Builder(this, channelId)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setLargeIcon(pictureBitmap)
                 .setContentTitle(title)
@@ -159,8 +158,9 @@ public class NotificationService extends FirebaseMessagingService {
                 .setLights(Color.parseColor("#3F51B5"), 1000, 5000)
                 .setNumber(messages.size())
                 .setStyle(style)
-                .setGroup(groupId)
-                .build();
+                .setGroup(groupId);
+
+        Notification notification = notificationBuilder.setVibrate(new long[]{0L}).build();
         notificationManager.notify(action, 0, notification);
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -170,6 +170,7 @@ public class NotificationService extends FirebaseMessagingService {
                     .setGroup(groupId)
                     .setGroupSummary(true)
                     .setAutoCancel(true)
+                    .setVibrate(new long[]{0L})
                     .build();
             notificationManager.notify("summary", 0, summaryNotification);
         }
@@ -182,6 +183,8 @@ public class NotificationService extends FirebaseMessagingService {
         if (this.notifs.get(action) != null) {
             this.notifs.remove(action);
         }
+
+        this.updateNotification();
     }
 
     public void updateNotification() {

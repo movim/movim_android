@@ -16,6 +16,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -26,6 +27,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
@@ -64,6 +66,7 @@ public class MainActivity extends Activity {
 
 		getWindow().requestFeature(Window.FEATURE_PROGRESS);
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+		getWindow().setFormat(PixelFormat.RGBA_8888);
 		setContentView(R.layout.activity_main);
 
 		webview = findViewById(R.id.webview);
@@ -103,6 +106,8 @@ public class MainActivity extends Activity {
 		progressbar.setIndeterminate(true);
 
 		webview.addJavascriptInterface(this, "Android");
+		webview.setBackgroundColor(Color.TRANSPARENT);
+		webview.setVisibility(View.GONE);
 		webview.setWebChromeClient(new WebChromeClient() {
 			@Override
 			public void onPermissionRequest(PermissionRequest request) {
@@ -111,11 +116,15 @@ public class MainActivity extends Activity {
 			}
 
 			public void onProgressChanged(WebView view, int progress) {
-				progressbar.setProgress(progress);
 				if (progress < 100 && progress > 0 && progressbar.getVisibility() == ProgressBar.GONE) {
 					progressbar.setIndeterminate(true);
 					progressbar.setVisibility(ProgressBar.VISIBLE);
 				}
+
+				if (progress > 80) {
+					webview.setVisibility(View.VISIBLE);
+				}
+
 				if (progress == 100) {
 					progressbar.setVisibility(ProgressBar.GONE);
 
