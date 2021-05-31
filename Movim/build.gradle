@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "com.movim.movim"
         minSdkVersion 21
-        targetSdkVersion 26
-        versionCode 14
-        versionName "0.18.1"
+        targetSdkVersion 30
+        versionCode 15
+        versionName "0.19"
     }
 
     buildTypes {
