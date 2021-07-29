@@ -2,7 +2,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:layout_marginTop="-24dp"
     android:fitsSystemWindows="true">
 
     <WebView
@@ -17,5 +16,5 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="-7dip"
-        android:padding="0dip"></ProgressBar>
+        android:padding="0dip" />
 </RelativeLayout>

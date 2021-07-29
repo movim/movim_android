@@ -89,9 +89,9 @@ public class VisioActivity extends Activity {
                 .build();
         notificationManager.notify("call", 0, notification);
 
-        Intent notificationService = new Intent(this, NotificationService.class);
-        notificationService.setAction("update");
-        startService(notificationService);
+        if (MainActivity.getInstance() != null) {
+            MainActivity.getInstance().updateNotifications();
+        }
     }
 
     protected void onDestroy() {
@@ -100,10 +100,7 @@ public class VisioActivity extends Activity {
 
         NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel("call", 0);
-
-        Intent notificationService = new Intent(this, NotificationService.class);
-        notificationService.setAction("update");
-        startService(notificationService);
+        MainActivity.getInstance().updateNotifications();
     }
 
     private void endCall() {
