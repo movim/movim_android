@@ -226,7 +226,11 @@ public class MainActivity extends Activity {
 				}
 			}
 		});
-
+		webview.setWebViewClient(new WebViewClient() {
+			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				return false;
+			}
+		});
 		webview.loadUrl("file:///android_asset/index.html");
 
 		instance = this;
