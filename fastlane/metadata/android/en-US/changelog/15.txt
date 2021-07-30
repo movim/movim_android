@@ -1,5 +1,0 @@
-* Fit with the 0.19 release
-* Push notifications support (if configured server side)
-* New app icon
-* Code cleanup
-* Remove the autofocus requirement for the camera
