@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		setTheme(R.style.SplashTheme);
-		this.notifs = new HashMap<String, List<String>>();
+		this.notifs = new HashMap<>();
 
 		super.onCreate(savedInstanceState);
 		getWindow().requestFeature(Window.FEATURE_PROGRESS);
@@ -85,19 +85,14 @@ public class MainActivity extends Activity {
 		webview.getSettings().setMediaPlaybackRequiresUserGesture(false);
 
 		if (Build.VERSION.SDK_INT >= 21) {
-			webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
+			webview.getSettings().setAllowFileAccess(true);
 			getWindow().setNavigationBarColor(Color.parseColor("#000000"));
 		}
 
-		if (Build.VERSION.SDK_INT >= 19) {
-			// chromium, enable hardware acceleration
-			webview.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-		} else {
-			// older android version, disable hardware acceleration
-			webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-		}
+		// chromium, enable hardware acceleration
+		webview.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
-		progressbar = (ProgressBar) findViewById(R.id.progress);
+		progressbar = findViewById(R.id.progress);
 		progressbar.setIndeterminate(true);
 
 		webview.addJavascriptInterface(this, "Android");
@@ -237,7 +232,7 @@ public class MainActivity extends Activity {
 	}
 
 
-	private boolean checkAndRequestPermissions() {
+	private void checkAndRequestPermissions() {
 		int permissionCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
 		int permissionRecordAudio = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
 
@@ -250,10 +245,8 @@ public class MainActivity extends Activity {
 		}
 		if (!listPermissionsNeeded.isEmpty()) {
 			ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), CAMERA_REQUEST_CODE);
-			return false;
 		}
 
-		return true;
 	}
 
 	@Override
