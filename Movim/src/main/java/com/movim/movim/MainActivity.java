@@ -68,8 +68,8 @@ public class MainActivity extends Activity {
 	private static MainActivity instance;
 
 	private ValueCallback<Uri[]> mUploadMessageArray;
-	private final static int FILE_REQUEST_CODE = 1;
-	private final static int CAMERA_REQUEST_CODE = 2;
+	private final static int FILE_REQUEST_CODE = 0;
+	private final static int CAMERA_REQUEST_CODE = 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
