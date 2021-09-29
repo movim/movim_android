@@ -8,8 +8,8 @@ android {
         applicationId "com.movim.movim"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 16
-        versionName "0.19.1"
+        versionCode 17
+        versionName "0.19.2"
     }
 
     buildTypes {
