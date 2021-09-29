@@ -16,16 +16,19 @@ import android.app.AlertDialog.Builder;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -35,15 +38,10 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 import android.text.InputType;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
@@ -57,24 +55,20 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-
 @SuppressLint("SetJavaScriptEnabled")
 public class MainActivity extends Activity {
+	private final static int FILE_REQUEST_CODE = 1;
+	private final static int CAMERA_REQUEST_CODE = 2;
 	private WebView webview;
 	private ProgressBar progressbar;
 	private HashMap<String, List<String>> notifs;
 	private static MainActivity instance;
 
 	private ValueCallback<Uri[]> mUploadMessageArray;
-	private final static int FILE_REQUEST_CODE = 0;
-	private final static int CAMERA_REQUEST_CODE = 1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		setTheme(R.style.SplashTheme);
-		this.notifs = new HashMap<String, List<String>>();
 
 		super.onCreate(savedInstanceState);
 
@@ -91,7 +85,7 @@ public class MainActivity extends Activity {
 		webview.getSettings().setAppCacheEnabled(true);
 		webview.getSettings().setMediaPlaybackRequiresUserGesture(false);
 
-		
+
 		if (Build.VERSION.SDK_INT >= 21) {
 			webview.getSettings().setAllowUniversalAccessFromFileURLs(true);
 			getWindow().setNavigationBarColor(Color.parseColor("#000000"));
@@ -182,12 +176,12 @@ public class MainActivity extends Activity {
 			}
 
 			public void onReceivedHttpAuthRequest(final WebView view, final HttpAuthHandler handler, final String host,
-					final String realm) {
+												  final String realm) {
 				final String[] httpAuth = new String[2];
 				final String[] viewAuth = view.getHttpAuthUsernamePassword(host, realm);
 				final EditText usernameInput = new EditText(MainActivity.getInstance());
 				final EditText passwordInput = new EditText(MainActivity.getInstance());
- 
+
 				httpAuth[0] = viewAuth != null ? viewAuth[0] : new String();
 				httpAuth[1] = viewAuth != null ? viewAuth[1] : new String();
 
@@ -225,13 +219,8 @@ public class MainActivity extends Activity {
 		instance = this;
 	}
 
-	@Override
-	protected void onStop () {
-		super.onStop() ;
-		startService( new Intent( this, NotificationManager. class )) ;
-	}
 
-	private boolean checkAndRequestPermissions() {
+	private void checkAndRequestPermissions() {
 		int permissionCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
 		int permissionRecordAudio = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
 
@@ -244,10 +233,8 @@ public class MainActivity extends Activity {
 		}
 		if (!listPermissionsNeeded.isEmpty()) {
 			ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), CAMERA_REQUEST_CODE);
-			return false;
 		}
 
-		return true;
 	}
 
 	@Override
@@ -275,41 +262,25 @@ public class MainActivity extends Activity {
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-	};
+	}
 
 	public static MainActivity getInstance() {
 		return instance;
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-		if (mUploadMessageArray == null)
-			return;
-
-		mUploadMessageArray.onReceiveValue(new Uri[]{});
-		mUploadMessageArray = null;
-	}
-
-	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 
-		if (requestCode != FILE_REQUEST_CODE || mUploadMessageArray == null) {
+		if (requestCode != FILE_REQUEST_CODE || resultCode != Activity.RESULT_OK || data.getData() == null)
 			return;
-		}
 
-		Uri[] results = null;
-		if (resultCode == Activity.RESULT_OK) {
-			String dataString = data.getDataString();
-			if (dataString != null) {
-				results = new Uri[]{Uri.parse(dataString)};
-			}
-		}
-		mUploadMessageArray.onReceiveValue(results);
+		if (mUploadMessageArray == null)
+			return;
+
+		mUploadMessageArray.onReceiveValue(new Uri[] { data.getData() });
 		mUploadMessageArray = null;
 	}
-
 
 	@JavascriptInterface
 	public void openVisio(String url) {
@@ -323,7 +294,6 @@ public class MainActivity extends Activity {
 	public void showToast(String toast) {
 		Toast.makeText(this, toast, Toast.LENGTH_SHORT).show();
 	}
-
 
 	@JavascriptInterface
 	public void clearNotifications(String action) {
@@ -355,7 +325,7 @@ public class MainActivity extends Activity {
 		registerReceiver(receiver, new IntentFilter(action));
 
 		// Integer counter;
-		List<String> messages = null;
+		List<String> messages;
 
 		// There is already pending notifications
 		if (this.notifs.get(action) != null) {
@@ -385,7 +355,7 @@ public class MainActivity extends Activity {
 		String channelId = "channel-movim";
 		String channelName = "Movim";
 		String groupId = "movim";
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			NotificationChannel mChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT);
 			notificationManager.createNotificationChannel(mChannel);
 		}
@@ -404,7 +374,7 @@ public class MainActivity extends Activity {
 				.build();
 		notificationManager.notify(action, 0, notification);
 
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			Notification summaryNotification = new NotificationCompat.Builder(this, channelId)
 					.setSmallIcon(R.drawable.ic_stat_name)
 					.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_vectorial))
@@ -417,7 +387,7 @@ public class MainActivity extends Activity {
 	}
 
 	protected void updateNotifications() {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 			int counter = notificationManager.getActiveNotifications().length;
 
@@ -463,4 +433,14 @@ public class MainActivity extends Activity {
 		}
 		return super.onKeyUp(keyCode, event);
 	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if ((keyCode == KeyEvent.KEYCODE_BACK) && webview.canGoBack()) {
+			webview.goBack();
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
 }
