@@ -1,15 +1,14 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId "com.movim.movim"
         minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 15
-        versionName "0.19"
+        targetSdkVersion 29
+        versionCode 17
+        versionName "0.19.2"
     }
 
     buildTypes {
@@ -21,9 +20,9 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation platform('com.google.firebase:firebase-bom:26.3.0')
-    implementation 'com.google.firebase:firebase-messaging'
+    //noinspection GradleCompatible
+    implementation 'com.android.support:support-v4:28.0.0'
+    //noinspection GradleCompatible
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
 }
